@@ -3,4 +3,4 @@ Code to generate a synthetic population of individuals and households at a fine 
 
 All the input data sources used in the generation process are publicly accessible through Statistics Canada Catalogue. Synthetic populations for the all Canada for 2016, 2021,2023 and 2030 are public and freely available through Figshare [link to dataset repo].
 
-![alt text](https://github.com/maprdhm/synpopCanada/images/workflow.jpg?raw=true)
+![alt text](https://github.com/maprdhm/synpopCanada/images/workflow.png?raw=true)
