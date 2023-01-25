@@ -10,10 +10,10 @@
 #$ -o ./logs
 #$ -e ./errors
 
-if [ "$#" != "4" ]; then
-  echo "usage: qsub $0 <path> <province-code> <from-DA-index> <year>"
+if [ "$#" != "5" ]; then
+  echo "usage: qsub $0 <path> <province-code> <from-DA-index> <year> <scenario>"
   exit 1
 fi
 
-python assign_hhtype.py $1 $2 $3 $4
+python assign_hhtype.py $1 $2 $3 $4 $5
 

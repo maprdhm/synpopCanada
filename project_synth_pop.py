@@ -95,6 +95,8 @@ if __name__ == '__main__':
     path = sys.argv[1]
     province = str(sys.argv[2])
     year = int(sys.argv[3])
+    scenario = str(sys.argv[4]) # LG: low-growth, M1: medium-growth, M2: medium-growth, M3: medium-growth,
+                                # M4: medium-growth, M5: medium-growth, HG: high-growth, SA: slow-aging, FA: fast-aging
     print(year)
 
     filename = load_filename(path)
@@ -109,7 +111,7 @@ if __name__ == '__main__':
         age_grps = df_pop['agegrp'].unique()
         age_grps.sort()
 
-        province_proj = load_projections(path, "LG: low-growth", year, province)
+        province_proj = load_projections(path, scenario, year, province)
         totalAgeF, totalAgeM = get_projections_by_age_sex(province_proj)
         missingAgeF, missingAgeM = get_missing_by_age_sex(totalAgeF, totalAgeM, df_pop, age_grps)
 
@@ -135,6 +137,8 @@ if __name__ == '__main__':
                 df_pop = df_pop.drop(to_remove.index)
         print(len(df_pop.index))
         df_pop = df_pop[['sex', 'prihm', 'agegrp','area', 'hdgree', 'lfact', 'hhsize', 'totinc']]
-        df_pop.to_csv(path + "/" + filename + "/syn_pop/synthetic_pop_y_" + str(year) + ".csv", index=False)
+        if not os.path.isdir(path + "/" + filename + "/syn_pop/"+scenario[:2]):
+            os.makedirs(path + "/" + filename + "/syn_pop/"+scenario[:2])
+        df_pop.to_csv(path + "/" + filename + "/syn_pop/"+scenario[:2]+"/synthetic_pop_y_" + str(year) + ".csv", index=False)
     else:
         print("Please indicate a year between 2018 and 2042")

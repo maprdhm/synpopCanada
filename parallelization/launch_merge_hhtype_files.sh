@@ -10,9 +10,9 @@
 #$ -o ./logs
 #$ -e ./errors
 
-if [ "$#" != "3" ]; then
-  echo "usage: qsub $0 <path> <province-code> <year>"
+if [ "$#" != "4" ]; then
+  echo "usage: qsub $0 <path> <province-code> <year> <scenario>"
   exit 1
 fi
 
-python merge_hhtype_files.py $1 $2 $3
+python merge_hhtype_files.py $1 $2 $3 $4

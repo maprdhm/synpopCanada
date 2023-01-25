@@ -43,8 +43,8 @@ def load_stats_census(path, year):
 
 
 # Load statistics from synthetic population 2021
-def load_stats_syn_pop(path, year, df_stats_census):
-    file = path + '/syn_pop_' + year + '_stats.csv'
+def load_stats_syn_pop(path, year, df_stats_census, scenario):
+    file = path + '/syn_pop_' + year + '_stats_'+scenario+'.csv'
     df_pop = pd.read_csv(file, usecols=['area', 'population', 'males', 'females', 'population private dwellings',
                                         'households', 'avg age', 'med age', 'avg hh size', '0-4', '5-9', '10-14',
                                         '15-19', '20-24', '25-29', '30-34', '35-39', '40-44', '45-49', '50-54',
@@ -369,7 +369,7 @@ def compute_errors_DA(df_stats_census, df_stats_syn_pop):
     df_stats_syn_pop_da = df_stats_syn_pop.loc[df_stats_syn_pop['area'].str.startswith('2016S0512')]
     df_stats_syn_pop_da = df_stats_syn_pop_da.replace(np.inf, 0)
     df_stats_syn_pop_da = df_stats_syn_pop_da.replace(np.nan, 0)
-    print("DAs", sum(df_stats_syn_pop_da['% realistic individuals']) / len(df_stats_syn_pop_da), "% realistic on average",
+    print("DAs", sum(df_stats_syn_pop_da['% realistic individuals']) / len(df_stats_syn_pop_da), "% realistic individuals on average",
           "from", round(min(df_stats_syn_pop_da['% realistic individuals']), 2), "to", round(max(df_stats_syn_pop_da['% realistic individuals']), 2),
           'q1', round(np.percentile(df_stats_syn_pop_da['% realistic individuals'],25), 2), 'q3', round(np.percentile(df_stats_syn_pop_da['% realistic individuals'],75), 2)
           , 'median', round(np.percentile(df_stats_syn_pop_da['% realistic individuals'],50), 2), '5%', round(np.percentile(df_stats_syn_pop_da['% realistic individuals'],5), 2))
@@ -406,11 +406,12 @@ if __name__ == '__main__':
         sys.exit(1)
     path = sys.argv[1]
     year = "2021"
+    scenario = "LG" # need to change it in load_projections parameters as well
     print(year)
 
     # Load stats from census, synthetic population projections, estimates
     df_stats_census = load_stats_census(path, year)
-    df_stats_syn_pop = load_stats_syn_pop(path, year, df_stats_census)
+    df_stats_syn_pop = load_stats_syn_pop(path, year, df_stats_census, scenario)
     df_projections = load_projections(path, 'LG: low-growth', year)
     df_estimates = load_estimates(path, year)
 
@@ -421,7 +422,9 @@ if __name__ == '__main__':
     diff = pd.concat([df_stats_syn_pop, df_stats_census]).drop_duplicates(subset='area', keep=False)
     diff = diff.loc[diff['area'].str.startswith('2016S0512')]
     print(diff['area'])
-    df_stats_census.drop(diff.index, inplace=True)
+
+    #df_stats_census.drop(diff.index, inplace=True)
+    df_stats_syn_pop.drop(diff.index, inplace=True)
 
     # Compute errors DA level
     compute_errors_DA(df_stats_census, df_stats_syn_pop)

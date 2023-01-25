@@ -4,10 +4,14 @@ import numpy as np
 import os
 
 # Load synthetic population for province
-def load_syn_pop(path, filename, year):
+def load_syn_pop(path, filename, year, scenario):
     list_pop = []
     hid_index = 0
-    path = path + '/' + filename + '/syn_pop/'
+    if year == "2016":
+        path = path + '/' + filename + '/syn_pop/'
+    else:
+        path = path + '/' + filename + '/syn_pop/' + scenario + '/'
+
     for file in os.listdir(path):
         if file.startswith("synthetic_pop_"+str(year)) & (file.endswith("hh.csv") & (file != "synthetic_pop_"+str(year)+"_hh.csv")):
             dat = pd.read_csv(path + "/" + file)
@@ -26,6 +30,8 @@ def load_syn_pop(path, filename, year):
             dat['HID'] = dat['HID'].map(map_dict)
 
             list_pop.append(dat)
+    if len(list_pop) == 0:
+        return pd.DataFrame()
     df_pop = pd.concat(list_pop)
     print(df_pop)
     df_pop.reset_index(inplace=True, drop=True)
@@ -46,28 +52,34 @@ def load_DAs(path, province):
     return DA_codes, filename
 
 
-def merge(path, province, year):
+def merge(path, province, year, scenario):
     DA_codes, filename = load_DAs(path, province)
-    df_pop = load_syn_pop(path, filename, year)
+    df_pop = load_syn_pop(path, filename, year, scenario)
     print(len(df_pop))
     df_pop = df_pop.drop(['level_0'], axis=1, errors='ignore')
     df_pop = df_pop.drop(['Unnamed: 0'], axis=1, errors='ignore')
     if not df_pop.empty:
-        df_pop.to_csv(path + "/" + filename + "/syn_pop/synthetic_pop_" + str(year) + "_hh.csv", index=False)
+        if year == "2016":
+            output_path = path + '/' + filename + '/syn_pop'
+        else:
+            output_path = path + "/" + filename + "/syn_pop/" + scenario
+        df_pop.to_csv(output_path + "/synthetic_pop_" + str(year) + "_hh.csv", index=False)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 5:
         print("Wrong number of arguments")
         sys.exit(1)
     path = sys.argv[1]
     province = str(sys.argv[2])
     year = int(sys.argv[3])
+    scenario = str(sys.argv[4])
     print(year)
 
-    if (province == "-1") & (year == -1):
+    if (province == "-1") & (year == -1) & (scenario == "-1"):
         for province in ['10','11','12','13','24','35','46','47','48','59','60', '61', '62']:
-            for year in ['2016', '2021', '2022', '2030']:
-                merge(path, province, year)
+            for year in ['2016', '2021', '2023', '2030']:
+                for scenario in ['LG', 'M1', 'M2', 'M3', 'M4', 'M5', 'HG', 'SA', 'FA']:
+                    merge(path, province, year, scenario)
     else:
-        merge(path, province, year)
+        merge(path, province, year, scenario)

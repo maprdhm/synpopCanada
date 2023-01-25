@@ -22,8 +22,11 @@ def load_hh(path):
 
 
 # Load synthetic population for province
-def load_syn_pop(path, year, filename):
-    file = path + '/' + filename + '/syn_pop/synthetic_pop_y_' + year + '.csv'
+def load_syn_pop(path, year, filename, scenario):
+    if year == "2016":
+        file = path + '/' + filename + '/syn_pop/synthetic_pop_y_' + year + '.csv'
+    else:
+        file = path + '/' + filename + '/syn_pop/' + scenario + '/synthetic_pop_y_' + year + '.csv'
     df_pop = pd.read_csv(file)
     df_pop['area'] = df_pop['area'].astype(str)
     nb_age_grp = len(df_pop['agegrp'].unique()) - 1
@@ -44,8 +47,8 @@ def load_syn_pop(path, year, filename):
     df_pop.loc[df_pop['agegrp'] == nb_age_grp, 'age'] = [np.random.geometric(p=0.2) + nb_age_grp * 5 - 1 for k in
                                                          df_pop.loc[df_pop['agegrp'] == nb_age_grp].index]
 
-    df_pop.drop('Unnamed: 0', inplace=True, axis=1)
-    df_pop.drop('Unnamed: 0.1', inplace=True, axis=1)
+    df_pop.drop('Unnamed: 0', inplace=True, axis=1, errors="ignore")
+    df_pop.drop('Unnamed: 0.1', inplace=True, axis=1, errors="ignore")
     # df_pop.insert(0, 'ID', range(0, len(df_pop)))
     return df_pop
 
@@ -168,9 +171,10 @@ if __name__ == '__main__':
     province = str(sys.argv[2])
     from_DA = int(sys.argv[3])
     year = sys.argv[4]
+    scenario = sys.argv[5]
 
     DA_codes, filename = load_DAs(path)
-    df_indivs = load_syn_pop(path, year, filename)
+    df_indivs = load_syn_pop(path, year, filename, scenario)
     df_hh = load_hh(path)
     dict = load_prihm_hh_probas(df_hh, df_indivs)
 
@@ -241,8 +245,13 @@ if __name__ == '__main__':
     df_indivs = df_indivs.drop(['agegrp_map'], axis=1)
     df_indivs = df_indivs[['HID','sex', 'prihm', 'agegrp', 'age','area', 'hdgree', 'lfact', 'hhsize', 'totinc']]
 
+    if year == "2016":
+        output_path = path + '/' + filename + '/syn_pop'
+    else:
+        output_path = path + "/" + filename + '/syn_pop/' + scenario
+
     if not df_indivs.empty:
         if (from_DA == 0) & (to_DA == len(DA_codes)):
-            df_indivs.to_csv(path + "/" + filename + "/syn_pop/synthetic_pop_" + str(year) + "_hh.csv", index=False)
+            df_indivs.to_csv(output_path + "/synthetic_pop_" + str(year) + "_hh.csv", index=False)
         else:
-            df_indivs.to_csv(path + "/" + filename + "/syn_pop/synthetic_pop_" + str(year) + "_" + str(to_DA) + "_hh.csv", index=False)
+            df_indivs.to_csv(output_path + "/synthetic_pop_" + str(year) + "_" + str(to_DA) + "_hh.csv", index=False)

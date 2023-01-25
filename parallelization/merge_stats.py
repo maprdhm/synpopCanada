@@ -4,10 +4,10 @@ import os
 
 
 # Load synthetic population stats
-def load_syn_pop(path):
+def load_syn_pop(path, scenario):
     list_stats = []
     for file in os.listdir(path):
-        if file.startswith("syn_pop_2021_stats_"):
+        if file.startswith("syn_pop_2021_stats_"+scenario+"_"):
             dat = pd.read_csv(path + "/" + file)
             list_stats.append(dat)
     df_stats = pd.concat(list_stats)
@@ -35,8 +35,9 @@ if __name__ == '__main__':
         sys.exit(1)
     path = sys.argv[1]
 
-    df_stats = load_syn_pop(path)
-    df_stats.to_csv(path + "/syn_pop_2021_stats.csv", index=False)
+    for scenario in ['LG', 'M1', 'M2', 'M3', 'M4', 'M5', 'HG', 'SA', 'FA']:
+        df_stats = load_syn_pop(path, scenario)
+        df_stats.to_csv(path + "/syn_pop_2021_stats_"+scenario+".csv", index=False)
 
     df_census_stats = load_census_stats(path)
     df_census_stats.to_csv(path + "/census_2021_stats.csv", index=False)

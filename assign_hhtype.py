@@ -17,8 +17,12 @@ def load_DAs(path):
 
 
 # Load synthetic population for province
-def load_syn_pop(path, year, filename):
-    file = path + '/' + filename + '/syn_pop/synthetic_pop_' + year + '_hh.csv'
+def load_syn_pop(path, year, filename, scenario):
+    if year == "2016":
+        path = path + '/' + filename + '/syn_pop/'
+    else:
+        path = path + '/' + filename + '/syn_pop/' + scenario + '/'
+    file = path + 'synthetic_pop_' + year + '_hh.csv'
     df_pop = pd.read_csv(file)
     df_pop['area'] = df_pop['area'].astype(str)
     print(len(df_pop.index))
@@ -110,10 +114,11 @@ if __name__ == '__main__':
     province = str(sys.argv[2])
     from_DA = int(sys.argv[3])
     year = sys.argv[4]
+    scenario = sys.argv[5]
     print(year)
 
     DA_codes, filename = load_DAs(path)
-    df_indivs = load_syn_pop(path, year, filename)
+    df_indivs = load_syn_pop(path, year, filename, scenario)
 
     progress = from_DA + 1
     if from_DA == -1:
@@ -125,10 +130,15 @@ if __name__ == '__main__':
     df_indivs = df_indivs[df_indivs['area'].isin(DA_codes[from_DA:to_DA])]
     df_indivs = compute_hhtypes(df_indivs)
 
+    if year == "2016":
+        output_path = path + '/' + filename + '/syn_pop'
+    else:
+        output_path = path + "/" + filename + '/syn_pop/' + scenario
+
     if not df_indivs.empty:
         df_indivs = df_indivs[
-            ['index', 'HID', 'sex', 'prihm', 'agegrp', 'age', 'area', 'hdgree', 'lfact', 'hhsize', 'totinc', 'hhtype']]
+            ['HID', 'sex', 'prihm', 'agegrp', 'age', 'area', 'hdgree', 'lfact', 'hhsize', 'totinc', 'hhtype']]
         if (from_DA == 0) & (to_DA == len(DA_codes)):
-            df_indivs.to_csv(path + "/" + filename + "/syn_pop/synthetic_pop_" + str(year) + "_hh_.csv", index=False)
+            df_indivs.to_csv(output_path + "/synthetic_pop_" + str(year) + "_hh_.csv", index=False)
         else:
-            df_indivs.to_csv(path + "/" + filename + "/syn_pop/synthetic_pop_" + str(year) + "_" + str(to_DA) + "_hh_.csv", index=False)
+            df_indivs.to_csv(output_path + "/synthetic_pop_" + str(year) + "_" + str(to_DA) + "_hh_.csv", index=False)

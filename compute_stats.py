@@ -28,11 +28,10 @@ def load_provinces(path):
 
 
 # Load synthetic population for province
-def load_syn_pop(path, year, filename):
-    file = path + '/' + filename + '/syn_pop/synthetic_pop_' + year + '_hh_.csv'
+def load_syn_pop(path, year, filename, scenario):
+    file = path + '/' + filename + '/syn_pop/' + scenario + '/synthetic_pop_' + year + '_hh_.csv'
     df_pop = pd.read_csv(file)
     df_pop['area'] = df_pop['area'].astype(str)
-
     return df_pop
 
 
@@ -571,7 +570,7 @@ def generate_stats_census(path, year, canada_census21, provinces, city, from_):
         to_DA = len(DA_codes)
     else:
         from_DA = from_
-        to_DA = min(len(DA_codes), from_DA + 200)
+        to_DA = min(len(DA_codes), from_DA + 2000)
     cpt = 1
     for da in DA_codes[from_DA:to_DA]:
         print(cpt, "/", len(DA_codes))
@@ -609,7 +608,7 @@ def generate_stats_census(path, year, canada_census21, provinces, city, from_):
 
 
 # Get stats synthetic population for Canada, provinces and given city and save to file
-def generate_stats_syn_pop(path, year, provinces, city, from_):
+def generate_stats_syn_pop(path, year, provinces, city, from_, scenario):
     df_stats_syn_pop = pd.DataFrame(
                 columns=['area', 'population', 'males', "females",'population private dwellings', 'households', 'avg age',
                  'med age', 'avg hh size', '0-4', '5-9', '10-14', '15-19', '20-24', '25-29',
@@ -626,7 +625,7 @@ def generate_stats_syn_pop(path, year, provinces, city, from_):
     list_pop = []
     for pr in provinces.values():
         print("Province", pr)
-        df_pr = load_syn_pop(path, year, pr)
+        df_pr = load_syn_pop(path, year, pr, scenario)
         list_pop.append(df_pr)
         df_stats_syn_pop = compute_stats_synth_pop(df_pr, df_stats_syn_pop,
                                                 '2016A0002'+list(provinces.keys())[list(provinces.values()).index(pr)])
@@ -645,7 +644,7 @@ def generate_stats_syn_pop(path, year, provinces, city, from_):
         to_DA = len(DA_codes)
     else:
         from_DA = from_
-        to_DA = min(len(DA_codes), from_DA + 200)
+        to_DA = min(len(DA_codes), from_DA + 2000)
     cpt = 1
     # for da in DA_codes:
     for da in DA_codes[from_DA:to_DA]:
@@ -653,15 +652,15 @@ def generate_stats_syn_pop(path, year, provinces, city, from_):
         df_stats_syn_pop = compute_stats_synth_pop(df_pop.loc[(df_pop.area == da)], df_stats_syn_pop, '2016S0512' + da)
         cpt = cpt + 1
 
-    df_stats_syn_pop.to_csv(path + '/syn_pop_' + year + '_stats_' + str(city) + '_' + str(to_DA) + '.csv', index=False)
+    df_stats_syn_pop.to_csv(path + '/syn_pop_' + year + '_stats_'+ scenario+'_'+ str(city) + '_' + str(to_DA) + '.csv', index=False)
 
 
 # Path: path to files
 # city: csd code of the city of interest
 # from_DA:  -1 to generate all DAs of the city.
-#           If parallelization: DAs are generated 200 by 200, need to give the starting DA number
+#           If parallelization: DAs are generated 2000 by 2000, need to give the starting DA number
 if __name__ == '__main__':
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 5:
         print("Wrong number of arguments")
         sys.exit(1)
     path = sys.argv[1]
@@ -669,6 +668,7 @@ if __name__ == '__main__':
     from_DA = int(sys.argv[3])
     year = "2021"
     print(year)
+    scenario = sys.argv[4]
 
     provinces = load_provinces(path)
     df_indiv = load_indiv(path)
@@ -679,5 +679,5 @@ if __name__ == '__main__':
     total_vb_id, total_sex_vb_id, total_pd_vb_id, total_hh_vb_id, total_density_vb_id, age_vb, avg_age_vb_id, \
     med_age_vb_id, hhsize_vb, avg_hhsize_vb_id, totinc_vb, cfstat_vb = load_vbs_ids(canada_census21)
 
-    generate_stats_census(path, year, canada_census21, provinces, city, from_DA)
-    generate_stats_syn_pop(path, year, provinces, city, from_DA)
+    #generate_stats_census(path, year, canada_census21, provinces, city, from_DA)
+    generate_stats_syn_pop(path, year, provinces, city, from_DA, scenario)
